@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\student\\desktop\\unrealengine\\ue.portfolio\\nla_ue_project\\source\\nla_ue_project\\variant_shooter\\weapons\\shooterweaponholder.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\student\\desktop\\unrealengine\\ue.portfolio\\nla_ue_project\\intermediate\\build\\win64\\x64\\nla_ue_projecteditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.valexpapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\student\\desktop\\unrealengine\\ue.portfolio\\nla_ue_project\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\nla_ue_project\\definitions.nla_ue_project.h",
+            "c:\\users\\student\\desktop\\unrealengine\\ue.portfolio\\nla_ue_project\\source\\nla_ue_project\\variant_shooter\\weapons\\shooterweaponholder.h",
+            "c:\\users\\student\\desktop\\unrealengine\\ue.portfolio\\nla_ue_project\\intermediate\\build\\win64\\unrealeditor\\inc\\nla_ue_project\\uht\\shooterweaponholder.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
