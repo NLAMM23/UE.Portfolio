@@ -1,26 +1,25 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SmallCircle.h"
 #include "Engine/Canvas.h"
-#include "CanvasItem.h"
 
 void ASmallCircle::DrawHUD()
 {
 	Super::DrawHUD();
 
-	if (Canvas == nullptr) return;
+	if (!Canvas)
+	{
+		return;
+	}
 
-	FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	const float CenterX = Canvas->ClipX * 0.5f;
+	const float CenterY = Canvas->ClipY * 0.5f;
 
-	float CrosshairWidth = 10.0f;
-	float CrosshairHeight = 10.0f;
+	const int32 a = FMath::CeilToInt(Radius);
 
-	FVector2D CrosshairPosition(Center.X - (CrosshairWidth * 0.5f), Center.Y - (CrosshairHeight * 0.5f));
 
-	FLinearColor PurpleColor = FLinearColor(0.5f, 0.0f, 1.0f, 1.0f);
-
-	FCanvasTileItem TileItem(CrosshairPosition, FVector2D(CrosshairWidth, CrosshairHeight), PurpleColor);
-	TileItem.BlendMode = SE_BLEND_Translucent;
-	Canvas->DrawItem(TileItem);
+	for (int32 i = -a; i < a; ++i)
+	{
+		const float b = i + 0.5f;
+		const float HalfWdith = FMath::Sqrt(FMath::Max(0.0f, Radius * Radius - b * b));
+		DrawRect(Color, CenterX - HalfWdith, CenterY + i, HalfWdith * 2.0f, 1.0f);
+	}
 }

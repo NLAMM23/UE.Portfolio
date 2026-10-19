@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "SmallCircle.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class NLA_UE_PROJECT_API ASmallCircle : public AHUD
 {
@@ -16,5 +11,11 @@ class NLA_UE_PROJECT_API ASmallCircle : public AHUD
 
 public:
 	virtual void DrawHUD() override;
-	
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "SmallCircle")
+	float Radius = 4.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "SmallCircle")
+	FColor Color = FColor::Green;
 };
