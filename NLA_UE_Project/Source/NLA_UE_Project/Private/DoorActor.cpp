@@ -2,7 +2,6 @@
 #include "GimmickInterface.h"
 #include "Math/UnrealMathUtility.h"
 
-// Sets default values
 ADoorActor::ADoorActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -14,7 +13,6 @@ ADoorActor::ADoorActor()
 	DoorMesh->SetupAttachment(RootComponent);
 }
 
-// Called when the game starts or when spawned
 void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -22,7 +20,6 @@ void ADoorActor::BeginPlay()
 	TargetLocation = ClosedLocation;
 }
 
-// Called every frame
 void ADoorActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
