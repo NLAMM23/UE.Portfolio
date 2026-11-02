@@ -4,8 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
-#include "NiagaraComponent.h"
+#include "Camera/CameraActor.h"
 #include "SwitchAC.generated.h"
+
+
 
 UCLASS()
 class NLA_UE_PROJECT_API ASwitchAC : public AActor
@@ -23,15 +25,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* SwitchMesh;
 
+	// တံခါးပွင့်ချိန်တွင် ပြသရန် သီးသန့်သတ်မှတ်ထားသော Camera Actor
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+	// ACameraActor* အစား AActor* သို့ ပြောင်းပါ
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+	AActor* TargetCamera;
+	ACameraActor* TargetCamera;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* TriggerBox;
 
-	// Niagara Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UNiagaraComponent* LaserNiagaraComp;
+	// [Remove] Niagara Component ကို ဖြုတ်လိုက်ပါသည်
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	// UNiagaraComponent* LaserNiagaraComp;
 
-	UPROPERTY(EditInstanceOnly, Category = "Switch Settings")
-	AActor* TargetGimmick;
+	// Gimmick Array (Door များစွာကို ချိတ်ဆက်ရန်)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+	TArray<AActor*> TargetGimmicks;
 
 	bool bIsActivated = false;
 

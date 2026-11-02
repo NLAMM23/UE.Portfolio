@@ -26,6 +26,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* DoorMesh;
 
+	// To Open The Dorr Switch Total Numbers
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
+	int32 RequiredSwitchCount = 1;
+
+	// Total Numbers Swtich ON
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Door Settings")
+	int32 CurrentActivatedCount = 0;
+
 	virtual void ActivateGimmick_Implementation() override;
 
 private:

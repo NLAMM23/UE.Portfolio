@@ -2,7 +2,8 @@
 #include "GimmickInterface.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
-#include "NiagaraComponent.h"
+#include "Kismet/GameplayStatics.h" // PlayerController နှင့် Camera အတွက် လိုအပ်သည်
+#include "Camera/CameraActor.h"
 
 ASwitchAC::ASwitchAC()
 {
@@ -14,12 +15,6 @@ ASwitchAC::ASwitchAC()
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	TriggerBox->SetupAttachment(RootComponent);
 	TriggerBox->SetBoxExtent(FVector(100.f, 100.f, 100.f));
-
-	// Niagara Component
-	LaserNiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LaserNiagaraComp"));
-	LaserNiagaraComp->SetupAttachment(RootComponent);
-
-	LaserNiagaraComp->SetAutoActivate(false);
 }
 
 void ASwitchAC::BeginPlay()
@@ -31,34 +26,45 @@ void ASwitchAC::BeginPlay()
 void ASwitchAC::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (TargetGimmick && bIsActivated)
-	{
-		FVector StartPos = GetActorLocation();
-		FVector EndPos = TargetGimmick->GetActorLocation();
-
-		if (LaserNiagaraComp)
-		{
-			LaserNiagaraComp->SetVariableVec3(TEXT("User.BeamEnd"), EndPos);
-		}
-	}
+	// Camera Blend အသုံးပြုသည့်အခါ Tick ထဲတွင် ဇာတ်လမ်းဆက်စပ်မှုမရှိပါက ဘာမှရေးစရာမလိုပါ
 }
 
 void ASwitchAC::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this && TargetGimmick)
+	if (OtherActor && OtherActor != this && OtherActor == UGameplayStatics::GetPlayerPawn(this, 0))
 	{
-		if (TargetGimmick->GetClass()->ImplementsInterface(UGimmickInterface::StaticClass()))
+		if (!bIsActivated)
 		{
-			IGimmickInterface::Execute_ActivateGimmick(TargetGimmick);
-
 			bIsActivated = true;
-			if (LaserNiagaraComp)
+
+			// ၁။ Gimmick (Door) များကို ဖွင့်ရန် အလုပ်လုပ်ခိုင်းခြင်း
+			for (AActor* Gimmick : TargetGimmicks)
 			{
-				LaserNiagaraComp->Activate(true); // Niagara Effect
-				LaserNiagaraComp->SetVisibility(true);
+				if (Gimmick && Gimmick->GetClass()->ImplementsInterface(UGimmickInterface::StaticClass()))
+				{
+					IGimmickInterface::Execute_ActivateGimmick(Gimmick);
+				}
+			}
+
+			// ၂။ သတ်မှတ်ထားသော Camera Actor ဆီသို့ ကင်မရာ ပြောင်းလဲပြသခြင်း (Camera Blend)
+			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+			if (PC && TargetCamera)
+			{
+				// TargetCamera ဆီသို့ ၁.၅ စက္ကန့်ကြာ Smooth ဖြင့် ရွှေ့မည်
+				PC->SetViewTargetWithBlend(TargetCamera, 1.5f);
+
+				// ၃ စက္ကန့်ကြာပြီးနောက် Player ဆီသို့ ကင်မရာ ပြန်ပြောင်းပေးခြင်း
+				FTimerHandle CameraTimerHandle;
+				GetWorld()->GetTimerManager().SetTimer(CameraTimerHandle, [PC, this]()
+					{
+						APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+						if (PC && PlayerPawn)
+						{
+							PC->SetViewTargetWithBlend(PlayerPawn, 1.0f);
+						}
+					}, 3.0f, false);
 			}
 		}
 	}

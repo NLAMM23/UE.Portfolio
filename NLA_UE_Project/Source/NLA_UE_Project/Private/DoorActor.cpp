@@ -1,4 +1,4 @@
-#include "DoorActor.h"
+﻿#include "DoorActor.h"
 #include "GimmickInterface.h"
 #include "Math/UnrealMathUtility.h"
 
@@ -34,6 +34,12 @@ void ADoorActor::Tick(float DeltaTime)
 
 void ADoorActor::ActivateGimmick_Implementation()
 {
-	bIsOpen = !bIsOpen;
-	TargetLocation = bIsOpen ? (ClosedLocation + OpenOffset) : ClosedLocation;
+	CurrentActivatedCount++;
+
+	// AND Condition
+	if (CurrentActivatedCount >= RequiredSwitchCount)
+	{
+		bIsOpen = !bIsOpen;
+		TargetLocation = bIsOpen ? (ClosedLocation + OpenOffset) : ClosedLocation;
+	}
 }
