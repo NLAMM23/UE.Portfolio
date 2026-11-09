@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -34,6 +36,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
     TArray<AActor*> TargetGimmicks;
 
+    // ခလုတ် အလုပ်လုပ်သွားသောအခါ ပြောင်းမည့် Material Color
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+    UMaterialInterface* ChangeColorMaterial;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
     bool bIsActivated = false;
 
     UFUNCTION()

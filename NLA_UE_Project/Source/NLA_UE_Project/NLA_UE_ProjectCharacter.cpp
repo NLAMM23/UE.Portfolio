@@ -14,7 +14,7 @@ ANLA_UE_ProjectCharacter::ANLA_UE_ProjectCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-	
+
 	// Create the first person mesh that will be viewed only by this character's owner
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("First Person Mesh"));
 
@@ -42,10 +42,13 @@ ANLA_UE_ProjectCharacter::ANLA_UE_ProjectCharacter()
 	// Configure character movement
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
+
+	// Physics Handle Component ဖန်တီးခြင်း
+	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComp"));
 }
 
 void ANLA_UE_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{	
+{
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
@@ -59,6 +62,9 @@ void ANLA_UE_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* Player
 		// Looking/Aiming
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANLA_UE_ProjectCharacter::LookInput);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ANLA_UE_ProjectCharacter::LookInput);
+
+		// Grab Action (ပစ္စည်းကိုင်ရန်/ချရန်)
+		EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, this, &ANLA_UE_ProjectCharacter::GrabObject);
 	}
 	else
 	{
@@ -66,32 +72,22 @@ void ANLA_UE_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* Player
 	}
 }
 
-
 void ANLA_UE_ProjectCharacter::MoveInput(const FInputActionValue& Value)
 {
-	// get the Vector2D move axis
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	// pass the axis values to the move input
 	DoMove(MovementVector.X, MovementVector.Y);
-
 }
 
 void ANLA_UE_ProjectCharacter::LookInput(const FInputActionValue& Value)
 {
-	// get the Vector2D look axis
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	// pass the axis values to the aim input
 	DoAim(LookAxisVector.X, LookAxisVector.Y);
-
 }
 
 void ANLA_UE_ProjectCharacter::DoAim(float Yaw, float Pitch)
 {
 	if (GetController())
 	{
-		// pass the rotation inputs
 		AddControllerYawInput(Yaw);
 		AddControllerPitchInput(Pitch);
 	}
@@ -101,7 +97,6 @@ void ANLA_UE_ProjectCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController())
 	{
-		// pass the move inputs
 		AddMovementInput(GetActorRightVector(), Right);
 		AddMovementInput(GetActorForwardVector(), Forward);
 	}
@@ -109,12 +104,72 @@ void ANLA_UE_ProjectCharacter::DoMove(float Right, float Forward)
 
 void ANLA_UE_ProjectCharacter::DoJumpStart()
 {
-	// pass Jump to the character
 	Jump();
 }
 
 void ANLA_UE_ProjectCharacter::DoJumpEnd()
 {
-	// pass StopJumping to the character
 	StopJumping();
+}
+
+void ANLA_UE_ProjectCharacter::GrabObject()
+{
+	if (!PhysicsHandleComp) return;
+
+	// လက်ရှိ ကိုင်ထားပြီးသား ရှိမရှိ စစ်ဆေးခြင်း (ရှိလျှင် ပြန်ချမည်)
+	if (PhysicsHandleComp->GetGrabbedComponent())
+	{
+		ReleaseObject();
+		return;
+	}
+
+	// ကင်မရာမှ ရှေ့သို့ Raycast ပစ်ရန် နေရာသတ်မှတ်ခြင်း
+	FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
+	FVector ForwardVector = GetFirstPersonCameraComponent()->GetForwardVector();
+	FVector End = Start + (ForwardVector * 300.0f); // အကွာအဝေး 300 unit
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_PhysicsBody, Params);
+
+	if (bHit)
+	{
+		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+
+		// ထိမိသော ပစ္စည်းတွင် Simulate Physics ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+		if (HitComponent && HitComponent->IsSimulatingPhysics())
+		{
+			PhysicsHandleComp->GrabComponentAtLocationWithRotation(
+				HitComponent,
+				NAME_None,
+				HitResult.ImpactPoint,
+				HitComponent->GetComponentRotation()
+			);
+		}
+	}
+}
+
+void ANLA_UE_ProjectCharacter::ReleaseObject()
+{
+	if (PhysicsHandleComp && PhysicsHandleComp->GetGrabbedComponent())
+	{
+		PhysicsHandleComp->ReleaseComponent();
+	}
+}
+
+void ANLA_UE_ProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// ပစ္စည်းကိုင်ထားဆဲ ဖြစ်ပါက တည်နေရာကို ကစားသူရှေ့သို့ ရွှေ့ပေးနေမည်
+	if (PhysicsHandleComp && PhysicsHandleComp->GetGrabbedComponent())
+	{
+		FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
+		FVector ForwardVector = GetFirstPersonCameraComponent()->GetForwardVector();
+		FVector TargetLocation = Start + (ForwardVector * 200.0f); // ကစားသူရှေ့ အကွာအဝေး 200 unit
+
+		PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetFirstPersonCameraComponent()->GetComponentRotation());
+	}
 }

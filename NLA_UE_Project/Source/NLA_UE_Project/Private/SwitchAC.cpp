@@ -38,7 +38,13 @@ void ASwitchAC::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
         {
             bIsActivated = true;
 
-            // ၁။ Gimmick (Door) များကို ဖွင့်ရန် အလုပ်လုပ်ခိုင်းခြင်း
+            // ၁။ ခလုတ်အရောင်ပြောင်းလဲခြင်း
+            if (SwitchMesh && ChangeColorMaterial)
+            {
+                SwitchMesh->SetMaterial(0, ChangeColorMaterial);
+            }
+
+            // ၂။ Gimmick (Door) များကို ဖွင့်ရန် အလုပ်လုပ်ခိုင်းခြင်း
             for (AActor* Gimmick : TargetGimmicks)
             {
                 if (Gimmick && Gimmick->GetClass()->ImplementsInterface(UGimmickInterface::StaticClass()))
@@ -47,14 +53,12 @@ void ASwitchAC::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
                 }
             }
 
-            // ၂။ သတ်မှတ်ထားသော Camera Actor ဆီသို့ ကင်မရာ ပြောင်းလဲပြသခြင်း 
+            // ၃။ သတ်မှတ်ထားသော Camera Actor ဆီသို့ ကင်မရာ ပြောင်းလဲပြသခြင်း 
             APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
             if (PC && TargetCamera)
             {
-                // TargetCamera ဆီသို့ ၁.၅ စက္ကန့်ကြာ Smooth ဖြင့် ရွှေ့မည်
                 PC->SetViewTargetWithBlend(TargetCamera, 1.5f);
 
-                // ၃ စက္ကန့်ကြာပြီးနောက် Player ဆီသို့ ကင်မရာ ပြန်ပြောင်းပေးခြင်း
                 FTimerHandle CameraTimerHandle;
                 GetWorld()->GetTimerManager().SetTimer(CameraTimerHandle, [PC, this]()
                     {
