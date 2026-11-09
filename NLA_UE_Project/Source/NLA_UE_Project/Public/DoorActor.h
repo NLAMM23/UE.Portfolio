@@ -26,11 +26,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* DoorMesh;
 
-	// To Open The Dorr Switch Total Numbers
+	// To Open The Door Switch Total Numbers (Switch ဘယ်နှစ်ခုလိုလဲ)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
 	int32 RequiredSwitchCount = 1;
 
-	// Total Numbers Swtich ON
+	// Total Numbers Switch ON (လက်ရှိ ဖွင့်ထားပြီးသော Switch အရေအတွက်)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Door Settings")
 	int32 CurrentActivatedCount = 0;
 
@@ -47,5 +47,5 @@ private:
 	FVector OpenOffset = FVector(0.f, 0.f, 150.f);
 
 	UPROPERTY(EditAnywhere, Category = "Door Settings")
-	float MoveSpeed = 0.5f;
+	float MoveSpeed = 0.5f; // Door Open Speed
 };

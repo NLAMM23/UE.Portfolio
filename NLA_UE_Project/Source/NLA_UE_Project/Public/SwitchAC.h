@@ -7,46 +7,37 @@
 #include "Camera/CameraActor.h"
 #include "SwitchAC.generated.h"
 
-
-
 UCLASS()
 class NLA_UE_PROJECT_API ASwitchAC : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	ASwitchAC();
+    ASwitchAC();
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* SwitchMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UStaticMeshComponent* SwitchMesh;
 
-	// တံခါးပွင့်ချိန်တွင် ပြသရန် သီးသန့်သတ်မှတ်ထားသော Camera Actor
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
-	// ACameraActor* အစား AActor* သို့ ပြောင်းပါ
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
-	AActor* TargetCamera;
-	ACameraActor* TargetCamera;
+    // Camera Actor သို့မဟုတ် AActor သတ်မှတ်ချက်
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+    AActor* TargetCamera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UBoxComponent* TriggerBox;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* TriggerBox;
 
-	// [Remove] Niagara Component ကို ဖြုတ်လိုက်ပါသည်
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	// UNiagaraComponent* LaserNiagaraComp;
+    // Gimmick Array (Door များစွာကို ချိတ်ဆက်ရန်)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
+    TArray<AActor*> TargetGimmicks;
 
-	// Gimmick Array (Door များစွာကို ချိတ်ဆက်ရန်)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Switch Settings")
-	TArray<AActor*> TargetGimmicks;
+    bool bIsActivated = false;
 
-	bool bIsActivated = false;
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+        bool bFromSweep, const FHitResult& SweepResult);
 };

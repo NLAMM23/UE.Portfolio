@@ -14,7 +14,6 @@ class UGimmickInterface : public UInterface
 };
 
 /**
- * 
  */
 class NLA_UE_PROJECT_API IGimmickInterface
 {
