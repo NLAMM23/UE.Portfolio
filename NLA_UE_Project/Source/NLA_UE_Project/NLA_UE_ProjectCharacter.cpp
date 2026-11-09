@@ -116,7 +116,7 @@ void ANLA_UE_ProjectCharacter::GrabObject()
 {
 	if (!PhysicsHandleComp) return;
 
-	// လက်ရှိ ကိုင်ထားပြီးသား ရှိမရှိ စစ်ဆေးခြင်း (ရှိလျှင် ပြန်ချမည်)
+	// လက်ရှိ ကိုင်ထားပြီးသား ရှိမရှိ စစ်ဆေးခြင်း
 	if (PhysicsHandleComp->GetGrabbedComponent())
 	{
 		ReleaseObject();
@@ -126,7 +126,7 @@ void ANLA_UE_ProjectCharacter::GrabObject()
 	// ကင်မရာမှ ရှေ့သို့ Raycast ပစ်ရန် နေရာသတ်မှတ်ခြင်း
 	FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
 	FVector ForwardVector = GetFirstPersonCameraComponent()->GetForwardVector();
-	FVector End = Start + (ForwardVector * 300.0f); // အကွာအဝေး 300 unit
+	FVector End = Start + (ForwardVector * 300.0f); // အကွာအဝေး unit
 
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
@@ -138,7 +138,7 @@ void ANLA_UE_ProjectCharacter::GrabObject()
 	{
 		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 
-		// ထိမိသော ပစ္စည်းတွင် Simulate Physics ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+		// ထိမိသော ပစ္စည်းတွင် Simulate Physics စစ်ဆေးခြင်း
 		if (HitComponent && HitComponent->IsSimulatingPhysics())
 		{
 			PhysicsHandleComp->GrabComponentAtLocationWithRotation(
@@ -168,7 +168,7 @@ void ANLA_UE_ProjectCharacter::Tick(float DeltaTime)
 	{
 		FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
 		FVector ForwardVector = GetFirstPersonCameraComponent()->GetForwardVector();
-		FVector TargetLocation = Start + (ForwardVector * 200.0f); // ကစားသူရှေ့ အကွာအဝေး 200 unit
+		FVector TargetLocation = Start + (ForwardVector * 200.0f); // ကစားသူရှေ့ အကွာအဝေး unit
 
 		PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetFirstPersonCameraComponent()->GetComponentRotation());
 	}

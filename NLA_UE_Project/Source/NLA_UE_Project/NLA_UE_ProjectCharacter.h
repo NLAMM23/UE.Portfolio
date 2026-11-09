@@ -103,6 +103,6 @@ public:
 	/** Returns first person camera component **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-	// Physics Handle ကို ခေါ်သုံးရန် Getter
+	// Physics Handle ကို ခေါ်သုံးရန်
 	UPhysicsHandleComponent* GetPhysicsHandleComp() const { return PhysicsHandleComp; }
 };
