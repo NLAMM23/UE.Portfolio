@@ -9,6 +9,11 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NLA_UE_Project.h"
+#include "InteractInterface.h"
+#include "InteractHUD.h"
+#include "GameFramework/PlayerController.h"
+#include "InputCoreTypes.h"
+#include "Engine/World.h"
 
 ANLA_UE_ProjectCharacter::ANLA_UE_ProjectCharacter()
 {
@@ -43,8 +48,22 @@ ANLA_UE_ProjectCharacter::ANLA_UE_ProjectCharacter()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
 
-	// Physics Handle Component ဖန်တီးခြင်း
+	// Physics Handle Component
 	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComp"));
+}
+
+void ANLA_UE_ProjectCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// HUD class
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (PC->IsLocalController())
+		{
+			PC->ClientSetHUD(AInteractHUD::StaticClass());
+		}
+	}
 }
 
 void ANLA_UE_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,6 +84,10 @@ void ANLA_UE_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* Player
 
 		// Grab Action (ပစ္စည်းကိုင်ရန်/ချရန်)
 		EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, this, &ANLA_UE_ProjectCharacter::GrabObject);
+
+		// Interact (E ခလုတ်)
+		// Enhanced Input ၏ BindKey က ပိတ်ထားသောကြောင့် Parent (UInputComponent) BindKey ကို သုံးသည်
+		PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ANLA_UE_ProjectCharacter::Interact);
 	}
 	else
 	{
@@ -163,6 +186,8 @@ void ANLA_UE_ProjectCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UpdateInteractFocus(); 
+
 	// ပစ္စည်းကိုင်ထားဆဲ ဖြစ်ပါက တည်နေရာကို ကစားသူရှေ့သို့ ရွှေ့ပေးနေမည်
 	if (PhysicsHandleComp && PhysicsHandleComp->GetGrabbedComponent())
 	{
@@ -171,5 +196,47 @@ void ANLA_UE_ProjectCharacter::Tick(float DeltaTime)
 		FVector TargetLocation = Start + (ForwardVector * 200.0f); // ကစားသူရှေ့ အကွာအဝေး unit
 
 		PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetFirstPersonCameraComponent()->GetComponentRotation());
+	}
+}
+
+void ANLA_UE_ProjectCharacter::UpdateInteractFocus()
+{
+	FocusedActor = nullptr;
+	FocusedText = FText::GetEmpty();
+
+	if (!IsLocallyControlled() || !GetFirstPersonCameraComponent())
+	{
+		return;
+	}
+
+	const FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
+	const FVector End = Start + GetFirstPersonCameraComponent()->GetForwardVector() * InteractDistance;
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false, this);
+
+	// လက်ထဲ ကိုင်ထားသော ပစ္စည်းက Trace ကို မကာစေရန် ဖယ်ထားသည်
+	if (PhysicsHandleComp && PhysicsHandleComp->GetGrabbedComponent())
+	{
+		Params.AddIgnoredActor(PhysicsHandleComp->GetGrabbedComponent()->GetOwner());
+	}
+
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (HitActor && HitActor->GetClass()->ImplementsInterface(UInteractInterface::StaticClass())
+			&& IInteractInterface::Execute_CanInteract(HitActor))
+		{
+			FocusedActor = HitActor;
+			FocusedText = IInteractInterface::Execute_GetInteractText(HitActor);
+		}
+	}
+}
+
+void ANLA_UE_ProjectCharacter::Interact()
+{
+	if (AActor* Target = FocusedActor.Get())
+	{
+		IInteractInterface::Execute_Interact(Target, this);
 	}
 }

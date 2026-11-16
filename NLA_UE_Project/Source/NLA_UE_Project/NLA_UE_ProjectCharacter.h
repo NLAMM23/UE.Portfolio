@@ -52,7 +52,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* GrabAction;
 
-	// Physics Handle Component (ပစ္စည်းကိုင်ဆောင်ရန်)
+	/** Physics Handle Component(ပစ္စည်းကိုင်ဆောင်ရန်) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Physics")
 	UPhysicsHandleComponent* PhysicsHandleComp;
 
@@ -61,6 +61,12 @@ public:
 
 	// Tick function (ပစ္စည်းကိုင်ထားစဉ် နေရာရွှေ့ရန်)
 	virtual void Tick(float DeltaTime) override;
+
+	// လက်ရှိ ကြည့်နေသော Interact object ရှိမရှိ (HUD)
+	bool HasFocusedInteractable() const { return FocusedActor.IsValid(); }
+
+	// မျက်နှာပြင်ပေါ် ပြမည့် စာသား (HUD) 
+	FText GetFocusedInteractText() const { return FocusedText; }
 
 protected:
 
@@ -73,6 +79,18 @@ protected:
 	// Grab နှင့် Release လုပ်ဆောင်ချက်များ
 	void GrabObject();
 	void ReleaseObject();
+
+	virtual void BeginPlay() override;
+
+	// E ခလုတ် နှိပ်လျှင် ခေါ်မည်
+	void Interact();
+
+	// Camera ရှေ့သို့ Trace ပစ်၍ Interact လုပ်လို့ရသော object ရှာမည်
+	void UpdateInteractFocus();
+
+	// Interact လုပ်နိုင်သော အကွာအဝေး
+	UPROPERTY(EditAnywhere, Category = "Interact")
+	float InteractDistance = 250.0f;
 
 	/** Handles aim inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")
@@ -105,4 +123,11 @@ public:
 
 	// Physics Handle ကို ခေါ်သုံးရန်
 	UPhysicsHandleComponent* GetPhysicsHandleComp() const { return PhysicsHandleComp; }
+
+private:
+		// လက်ရှိ ကြည့်နေသော Interact object
+		TWeakObjectPtr<AActor> FocusedActor;
+
+		// ထို object ပြမည့်စာသား
+		FText FocusedText;
 };
