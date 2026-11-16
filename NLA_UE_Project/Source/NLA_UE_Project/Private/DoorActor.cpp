@@ -1,5 +1,8 @@
 ﻿#include "DoorActor.h"
-#include "GimmickInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/Pawn.h"
+#include "TimerManager.h"
 #include "Math/UnrealMathUtility.h"
 
 ADoorActor::ADoorActor()
@@ -17,30 +20,78 @@ void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
 	ClosedLocation = DoorMesh->GetRelativeLocation();
-	TargetLocation = ClosedLocation;
+
+	// Plate က BeginPlay မတိုင်ခင် Door ကို ခေါ်ခဲ့လျှင်လည်း မှန်ကန်စေရန်
+	TargetLocation = bIsOpen ? ClosedLocation + OpenOffset : ClosedLocation;
 }
 
 void ADoorActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// TargetLocation သို့ VInterpTo ဖြင့် MoveSpeed အတိုင်း ဖြည်းဖြည်းချင်း ရွှေ့မည်
-	FVector CurrentLocation = DoorMesh->GetRelativeLocation();
-	if (!CurrentLocation.Equals(TargetLocation, 1.0f))
+	const FVector CurrentLocation = DoorMesh->GetRelativeLocation();
+	if (!CurrentLocation.Equals(TargetLocation, 0.1f))
 	{
-		FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, MoveSpeed);
-		DoorMesh->SetRelativeLocation(NewLocation);
+		DoorMesh->SetRelativeLocation(
+			FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, MoveSpeed));
+	}
+	else if (!CurrentLocation.Equals(TargetLocation))
+	{
+		DoorMesh->SetRelativeLocation(TargetLocation);
 	}
 }
 
 void ADoorActor::ActivateGimmick_Implementation()
 {
 	CurrentActivatedCount++;
+	UpdateDoorState();
+}
 
-	// AND Condition (Switch အားလုံးပြည့်မှ တံခါးပွင့်မည်)
-	if (CurrentActivatedCount >= RequiredSwitchCount)
+void ADoorActor::DeactivateGimmick_Implementation()
+{
+	CurrentActivatedCount = FMath::Max(0, CurrentActivatedCount - 1);
+	UpdateDoorState();
+}
+
+void ADoorActor::UpdateDoorState()
+{
+	const bool bShouldOpen = (CurrentActivatedCount >= RequiredSwitchCount);
+
+	// အခြေအနေ မပြောင်းလျှင် ဘာမှမလုပ်ပါ
+	if (bShouldOpen == bIsOpen)
 	{
-		bIsOpen = true; // တံခါးဖွင့်ရန် True လုပ်သည်
-		TargetLocation = ClosedLocation + OpenOffset;
+		return;
 	}
+
+	bIsOpen = bShouldOpen;
+	TargetLocation = bIsOpen ? (ClosedLocation + OpenOffset) : ClosedLocation;
+
+	if (bIsOpen)
+	{
+		ShowCamera();
+	}
+}
+
+void ADoorActor::ShowCamera()
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PC || !TargetCamera)
+	{
+		return;
+	}
+
+	PC->SetViewTargetWithBlend(TargetCamera, 1.5f);
+
+	TWeakObjectPtr<APlayerController> WeakPC(PC);
+	FTimerHandle CameraTimerHandle;
+	GetWorldTimerManager().SetTimer(CameraTimerHandle, [WeakPC]()
+		{
+			if (WeakPC.IsValid())
+			{
+				if (APawn* Pawn = WeakPC->GetPawn())
+				{
+					WeakPC->SetViewTargetWithBlend(Pawn, 1.0f);
+				}
+			}
+		}, CameraHoldTime, false);
 }

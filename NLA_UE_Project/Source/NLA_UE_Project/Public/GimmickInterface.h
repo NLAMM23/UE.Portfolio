@@ -13,14 +13,16 @@ class UGimmickInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- */
 class NLA_UE_PROJECT_API IGimmickInterface
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	// Switch ON ဖြစ်သောအခါ ခေါ်မည်
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Gimmick")
 	void ActivateGimmick();
+
+	// Switch OFF ပြန်ဖြစ်သောအခါ ခေါ်မည်
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Gimmick")
+	void DeactivateGimmick();
 };

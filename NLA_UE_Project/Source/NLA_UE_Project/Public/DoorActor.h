@@ -26,18 +26,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* DoorMesh;
 
-	// To Open The Door Switch Total Numbers (Switch ဘယ်နှစ်ခုလိုလဲ)
+	// တံခါးဖွင့်ရန် လိုအပ်သော Switch အရေအတွက်
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
 	int32 RequiredSwitchCount = 1;
 
-	// Total Numbers Switch ON (လက်ရှိ ဖွင့်ထားပြီးသော Switch အရေအတွက်)
+	// လက်ရှိ ON ဖြစ်နေသော Switch အရေအတွက်
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Door Settings")
 	int32 CurrentActivatedCount = 0;
 
+	// တံခါးပွင့်ချိန် ပြသမည့် Camera
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
+	AActor* TargetCamera = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
+	float CameraHoldTime = 3.0f;
+
 	virtual void ActivateGimmick_Implementation() override;
+	virtual void DeactivateGimmick_Implementation() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Door Settings")
+	UPROPERTY(VisibleAnywhere, Category = "Door Settings")
 	bool bIsOpen = false;
 
 	FVector ClosedLocation;
@@ -47,5 +55,9 @@ private:
 	FVector OpenOffset = FVector(0.f, 0.f, 150.f);
 
 	UPROPERTY(EditAnywhere, Category = "Door Settings")
-	float MoveSpeed = 0.5f; // Door Open Speed
+	float MoveSpeed = 3.0f;
+
+	// Count ကို ကြည့်ပြီး ဖွင့်/ပိတ် ဆုံးဖြတ်ပေးသော function
+	void UpdateDoorState();
+	void ShowCamera();
 };
